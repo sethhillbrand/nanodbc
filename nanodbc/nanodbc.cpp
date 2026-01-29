@@ -2453,8 +2453,12 @@ public:
             &nullable);
         if (!success(rc))
         {
-            param_descr_data_.erase(param_index);
-            NANODBC_THROW_DATABASE_ERROR(stmt_, SQL_HANDLE_STMT);
+            // Fallback to binding as VARCHAR if SQLDescribeParam fails.
+            // This is necessary to support ODBC drivers that don't implement SQLDescribeParam,
+            // such as Microsoft Access, Excel, and CSV drivers.
+            param_descr_data_[param_index].type_ = SQL_VARCHAR;
+            param_descr_data_[param_index].size_ = 255;
+            param_descr_data_[param_index].scale_ = 0;
         }
     }
 
